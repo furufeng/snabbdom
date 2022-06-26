@@ -434,21 +434,27 @@ export function init(
     for (i = 0; i < cbs.pre.length; ++i) cbs.pre[i]();
 
     if (isElement(api, oldVnode)) {
+      // 创建一个空的vnode，并关联DOM元素
       oldVnode = emptyNodeAt(oldVnode);
     } else if (isDocumentFragment(api, oldVnode)) {
       oldVnode = emptyDocumentFragmentAt(oldVnode);
     }
 
     if (sameVnode(oldVnode, vnode)) {
+      // key跟tag相同，说明是同一个vnode
       patchVnode(oldVnode, vnode, insertedVnodeQueue);
     } else {
+      // key跟tag不同，说明是不同的vnode
       elm = oldVnode.elm!;
       parent = api.parentNode(elm) as Node;
 
+      // 创建新的DOM元素
       createElm(vnode, insertedVnodeQueue);
 
       if (parent !== null) {
+        // 插入新的DOM元素
         api.insertBefore(parent, vnode.elm!, api.nextSibling(elm));
+        // 移除老的DOM元素
         removeVnodes(parent, [oldVnode], 0, 0);
       }
     }
