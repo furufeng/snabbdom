@@ -389,10 +389,15 @@ export function init(
     vnode: VNode,
     insertedVnodeQueue: VNodeQueue
   ) {
+    // 执行hook
     const hook = vnode.data?.hook;
     hook?.prepatch?.(oldVnode, vnode);
+
+    // 设置新的vnode关联的DOM元素
     const elm = (vnode.elm = oldVnode.elm)!;
     if (oldVnode === vnode) return;
+
+    // 与hook相关
     if (
       vnode.data !== undefined ||
       (isDef(vnode.text) && vnode.text !== oldVnode.text)
@@ -403,23 +408,40 @@ export function init(
         cbs.update[i](oldVnode, vnode);
       vnode.data?.hook?.update?.(oldVnode, vnode);
     }
+    // 老的children
     const oldCh = oldVnode.children as VNode[];
+    // 新的children
     const ch = vnode.children as VNode[];
+
+    // 新的vnode 无text
     if (isUndef(vnode.text)) {
+      // 老的vnode有children 且 新的vnode 也有children
       if (isDef(oldCh) && isDef(ch)) {
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue);
+        // 新的vnode 有children 老的vnode 无children
       } else if (isDef(ch)) {
+        // 老的vnode 有text 删除text
         if (isDef(oldVnode.text)) api.setTextContent(elm, "");
+        // 添加children
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
+        // 新的vnode 无children 老的vnode 有children
       } else if (isDef(oldCh)) {
+        // 删除老的vnode
         removeVnodes(elm, oldCh, 0, oldCh.length - 1);
+        // 老的vnode 有text
       } else if (isDef(oldVnode.text)) {
+        // 清空text
         api.setTextContent(elm, "");
       }
+      // 新的有text
+      // 老的vnode text !== 新的vnode text
     } else if (oldVnode.text !== vnode.text) {
+      // 老的vnode 有children
       if (isDef(oldCh)) {
+        // 移除老的vnode children
         removeVnodes(elm, oldCh, 0, oldCh.length - 1);
       }
+      // 设置新vnode text
       api.setTextContent(elm, vnode.text!);
     }
     hook?.postpatch?.(oldVnode, vnode);
