@@ -314,14 +314,20 @@ export function init(
         newStartVnode = newCh[++newStartIdx];
       } else if (newEndVnode == null) {
         newEndVnode = newCh[--newEndIdx];
+
+        // 老的开始跟新的开始对比
       } else if (sameVnode(oldStartVnode, newStartVnode)) {
         patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue);
         oldStartVnode = oldCh[++oldStartIdx];
         newStartVnode = newCh[++newStartIdx];
+
+        // 老的结束跟新的结束对比
       } else if (sameVnode(oldEndVnode, newEndVnode)) {
         patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue);
         oldEndVnode = oldCh[--oldEndIdx];
         newEndVnode = newCh[--newEndIdx];
+
+        // 老的开始跟新的结束对比
       } else if (sameVnode(oldStartVnode, newEndVnode)) {
         // Vnode moved right
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
@@ -332,17 +338,25 @@ export function init(
         );
         oldStartVnode = oldCh[++oldStartIdx];
         newEndVnode = newCh[--newEndIdx];
+
+        // 老的结束跟新的开始对比
       } else if (sameVnode(oldEndVnode, newStartVnode)) {
         // Vnode moved left
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue);
         api.insertBefore(parentElm, oldEndVnode.elm!, oldStartVnode.elm!);
         oldEndVnode = oldCh[--oldEndIdx];
         newStartVnode = newCh[++newStartIdx];
+
+        // 以上4种情况都没有命中
       } else {
         if (oldKeyToIdx === undefined) {
           oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
         }
+
+        // 拿到新开始的key,在老children里去找有没有某个节点有对应这个key
         idxInOld = oldKeyToIdx[newStartVnode.key as string];
+        
+        // 没有在老chilren中找到对应的key
         if (isUndef(idxInOld)) {
           // New element
           api.insertBefore(
@@ -350,15 +364,22 @@ export function init(
             createElm(newStartVnode, insertedVnodeQueue),
             oldStartVnode.elm!
           );
+
+        // 在老children中找到对应的key
         } else {
+          // 找到对应key的元素
           elmToMove = oldCh[idxInOld];
+
+          // 判断tag是否相等
           if (elmToMove.sel !== newStartVnode.sel) {
+            // tag不相等
             api.insertBefore(
               parentElm,
               createElm(newStartVnode, insertedVnodeQueue),
               oldStartVnode.elm!
             );
           } else {
+            // tag相等
             patchVnode(elmToMove, newStartVnode, insertedVnodeQueue);
             oldCh[idxInOld] = undefined as any;
             api.insertBefore(parentElm, elmToMove.elm!, oldStartVnode.elm!);
